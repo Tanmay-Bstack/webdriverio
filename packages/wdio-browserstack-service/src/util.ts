@@ -40,7 +40,9 @@ import {
     APP_ALLY_ISSUES_SUMMARY_ENDPOINT,
     APP_ALLY_ISSUES_ENDPOINT,
     CLI_DEBUG_LOGS_FILE,
-    WDIO_NAMING_PREFIX
+    WDIO_NAMING_PREFIX,
+    MIN_BROWSER_VERSIONS_A11Y,
+    MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK
 } from './constants.js'
 import CrashReporter from './crash-reporter.js'
 import { BStackLogger } from './bstackLogger.js'
@@ -477,20 +479,44 @@ export const validateCapsWithA11y = (deviceName?: any, platformMeta?: { [key: st
             return false
         }
 
-        if (platformMeta?.browser_name?.toLowerCase() !== 'chrome') {
-            BStackLogger.warn('Accessibility Automation will run only on Chrome browsers.')
-            return false
-        }
+        const browserName = platformMeta?.browser_name?.toLowerCase()
         const browserVersion = platformMeta?.browser_version
-        if ( !isUndefined(browserVersion) && !(browserVersion === 'latest' || parseFloat(browserVersion + '') > 94)) {
-            BStackLogger.warn('Accessibility Automation will run only on Chrome browser version greater than 94.')
+        
+        const validBrowsers = ['chrome', 'chromefortesting', 'safari']
+        if (!browserName || !validBrowsers.includes(browserName)) {
+            BStackLogger.warn(`Accessibility Automation supports Chrome 95+, Chrome for Testing 95+, and Safari 16.5+. Current browser: ${browserName}`)
             return false
         }
 
-        if (chromeOptions?.args?.includes('--headless')) {
-            BStackLogger.warn('Accessibility Automation will not run on legacy headless mode. Switch to new headless mode or avoid using headless mode.')
-            return false
+        if (browserName === 'chrome' || browserName === 'chromefortesting') {
+            const minVersion = MIN_BROWSER_VERSIONS_A11Y[browserName as keyof typeof MIN_BROWSER_VERSIONS_A11Y]
+            if (browserVersion && browserVersion !== 'latest') {
+                const version = parseInt(browserVersion.toString().split('.')[0] || '0', 10)
+                if (version < minVersion) {
+                    BStackLogger.warn(`Accessibility Automation requires ${browserName === 'chrome' ? 'Chrome' : 'Chrome for Testing'} version ${minVersion} or higher.`)
+                    return false
+                }
+            }
+
+            if (chromeOptions?.args?.includes('--headless')) {
+                BStackLogger.warn('Accessibility Automation will not run on legacy headless mode. Switch to new headless mode or avoid using headless mode.')
+                return false
+            }
         }
+
+        // Safari validation
+        if (browserName === 'safari') {
+            if (browserVersion && browserVersion !== 'latest') {
+                const [currentMajor = 0, currentMinor = 0] = browserVersion.toString().split('.').map(Number)
+                const [requiredMajor = 0, requiredMinor = 0] = MIN_BROWSER_VERSIONS_A11Y.safari.toString().split('.').map(Number)
+                
+                if (currentMajor < requiredMajor || (currentMajor === requiredMajor && currentMinor < requiredMinor)) {
+                    BStackLogger.warn(`Accessibility Automation requires Safari version ${MIN_BROWSER_VERSIONS_A11Y.safari} or higher.`)
+                    return false
+                }
+            }
+        }
+
         return true
     } catch (error) {
         BStackLogger.debug(`Exception in checking capabilities compatibility with Accessibility. Error: ${error}`)
@@ -499,17 +525,41 @@ export const validateCapsWithA11y = (deviceName?: any, platformMeta?: { [key: st
 }
 
 export const validateCapsWithNonBstackA11y = (browserName?: string | undefined, browserVersion?:string | undefined )  => {
+    const browser = browserName?.toLowerCase()
+    
+    // Support Chrome, Chrome for Testing (ChromeForTesting), and Safari on non-BrowserStack infrastructure
+    const validBrowsers = ['chrome', 'chromefortesting', 'safari']
+    if (!browser || !validBrowsers.includes(browser)) {
+        BStackLogger.warn('Accessibility Automation on non-BrowserStack infrastructure supports Chrome 100+, Chrome for Testing 100+, and Safari 16.5+.')
+        return false
+    }
 
-    if (browserName?.toLowerCase() !== 'chrome') {
-        BStackLogger.warn('Accessibility Automation will run only on Chrome browsers.')
-        return false
+    // Chrome/Chrome for Testing validation
+    if (browser === 'chrome' || browser === 'chromefortesting') {
+        const minVersion = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK[browser as keyof typeof MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK]
+        if (browserVersion && browserVersion !== 'latest') {
+            const version = parseInt(browserVersion.toString().split('.')[0] || '0', 10)
+            if (version < minVersion) {
+                BStackLogger.warn(`Accessibility Automation requires ${browser === 'chrome' ? 'Chrome' : 'Chrome for Testing'} version ${minVersion}+ on non-BrowserStack infrastructure.`)
+                return false
+            }
+        }
     }
-    if (!isUndefined(browserVersion) && !(browserVersion === 'latest' || parseFloat(browserVersion + '') > 100)) {
-        BStackLogger.warn('Accessibility Automation will run only on Chrome browser version greater than 100.')
-        return false
+
+    // Safari validation
+    if (browser === 'safari') {
+        if (browserVersion && browserVersion !== 'latest') {
+            const [currentMajor = 0, currentMinor = 0] = browserVersion.toString().split('.').map(Number)
+            const [requiredMajor = 0, requiredMinor = 0] = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari.toString().split('.').map(Number)
+            
+            if (currentMajor < requiredMajor || (currentMajor === requiredMajor && currentMinor < requiredMinor)) {
+                BStackLogger.warn(`Accessibility Automation requires Safari version ${MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari}+ on non-BrowserStack infrastructure.`)
+                return false
+            }
+        }
     }
+
     return true
-
 }
 
 export const shouldScanTestForAccessibility = (suiteTitle: string | undefined, testTitle: string, accessibilityOptions?: { [key: string]: string; }, world?: { [key: string]: unknown; }, isCucumber?: boolean ) => {
