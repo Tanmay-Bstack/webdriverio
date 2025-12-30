@@ -481,7 +481,7 @@ export const validateCapsWithA11y = (deviceName?: any, platformMeta?: { [key: st
 
         const browserName = platformMeta?.browser_name?.toLowerCase()
         const browserVersion = platformMeta?.browser_version
-        
+
         const validBrowsers = ['chrome', 'chromefortesting', 'safari']
         if (!browserName || !validBrowsers.includes(browserName)) {
             BStackLogger.warn(`Accessibility Automation supports Chrome 95+, Chrome for Testing 95+, and Safari 16.5+. Current browser: ${browserName}`)
@@ -509,7 +509,7 @@ export const validateCapsWithA11y = (deviceName?: any, platformMeta?: { [key: st
             if (browserVersion && browserVersion !== 'latest') {
                 const [currentMajor = 0, currentMinor = 0] = browserVersion.toString().split('.').map(Number)
                 const [requiredMajor = 0, requiredMinor = 0] = MIN_BROWSER_VERSIONS_A11Y.safari.toString().split('.').map(Number)
-                
+
                 if (currentMajor < requiredMajor || (currentMajor === requiredMajor && currentMinor < requiredMinor)) {
                     BStackLogger.warn(`Accessibility Automation requires Safari version ${MIN_BROWSER_VERSIONS_A11Y.safari} or higher.`)
                     return false
@@ -526,7 +526,7 @@ export const validateCapsWithA11y = (deviceName?: any, platformMeta?: { [key: st
 
 export const validateCapsWithNonBstackA11y = (browserName?: string | undefined, browserVersion?:string | undefined )  => {
     const browser = browserName?.toLowerCase()
-    
+
     // Support Chrome, Chrome for Testing (ChromeForTesting), and Safari on non-BrowserStack infrastructure
     const validBrowsers = ['chrome', 'chromefortesting', 'safari']
     if (!browser || !validBrowsers.includes(browser)) {
@@ -551,7 +551,7 @@ export const validateCapsWithNonBstackA11y = (browserName?: string | undefined, 
         if (browserVersion && browserVersion !== 'latest') {
             const [currentMajor = 0, currentMinor = 0] = browserVersion.toString().split('.').map(Number)
             const [requiredMajor = 0, requiredMinor = 0] = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari.toString().split('.').map(Number)
-            
+
             if (currentMajor < requiredMajor || (currentMajor === requiredMajor && currentMinor < requiredMinor)) {
                 BStackLogger.warn(`Accessibility Automation requires Safari version ${MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari}+ on non-BrowserStack infrastructure.`)
                 return false
