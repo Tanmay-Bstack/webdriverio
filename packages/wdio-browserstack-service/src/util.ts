@@ -525,41 +525,46 @@ export const validateCapsWithA11y = (deviceName?: any, platformMeta?: { [key: st
 }
 
 export const validateCapsWithNonBstackA11y = (browserName?: string | undefined, browserVersion?:string | undefined )  => {
-    const browser = browserName?.toLowerCase()
+    try {
+        const browser = browserName?.toLowerCase()
 
-    // Support Chrome, Chrome for Testing (ChromeForTesting), and Safari on non-BrowserStack infrastructure
-    const validBrowsers = ['chrome', 'chromefortesting', 'safari']
-    if (!browser || !validBrowsers.includes(browser)) {
-        BStackLogger.warn('Accessibility Automation on non-BrowserStack infrastructure supports Chrome 100+, Chrome for Testing 100+, and Safari 16.5+.')
-        return false
-    }
+        // Support Chrome, Chrome for Testing (ChromeForTesting), and Safari on non-BrowserStack infrastructure
+        const validBrowsers = ['chrome', 'chromefortesting', 'safari']
+        if (!browser || !validBrowsers.includes(browser)) {
+            BStackLogger.warn('Accessibility Automation on non-BrowserStack infrastructure supports Chrome 100+, Chrome for Testing 100+, and Safari 16.5+.')
+            return false
+        }
 
-    // Chrome/Chrome for Testing validation
-    if (browser === 'chrome' || browser === 'chromefortesting') {
-        const minVersion = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK[browser as keyof typeof MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK]
-        if (browserVersion && browserVersion !== 'latest') {
-            const version = parseInt(browserVersion.toString().split('.')[0] || '0', 10)
-            if (version < minVersion) {
-                BStackLogger.warn(`Accessibility Automation requires ${browser === 'chrome' ? 'Chrome' : 'Chrome for Testing'} version ${minVersion}+ on non-BrowserStack infrastructure.`)
-                return false
+        // Chrome/Chrome for Testing validation
+        if (browser === 'chrome' || browser === 'chromefortesting') {
+            const minVersion = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK[browser as keyof typeof MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK]
+            if (browserVersion && browserVersion !== 'latest') {
+                const version = parseInt(browserVersion.toString().split('.')[0] || '0', 10)
+                if (version < minVersion) {
+                    BStackLogger.warn(`Accessibility Automation requires ${browser === 'chrome' ? 'Chrome' : 'Chrome for Testing'} version ${minVersion}+ on non-BrowserStack infrastructure.`)
+                    return false
+                }
             }
         }
-    }
 
-    // Safari validation
-    if (browser === 'safari') {
-        if (browserVersion && browserVersion !== 'latest') {
-            const [currentMajor = 0, currentMinor = 0] = browserVersion.toString().split('.').map(Number)
-            const [requiredMajor = 0, requiredMinor = 0] = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari.toString().split('.').map(Number)
+        // Safari validation
+        if (browser === 'safari') {
+            if (browserVersion && browserVersion !== 'latest') {
+                const [currentMajor = 0, currentMinor = 0] = browserVersion.toString().split('.').map(Number)
+                const [requiredMajor = 0, requiredMinor = 0] = MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari.toString().split('.').map(Number)
 
-            if (currentMajor < requiredMajor || (currentMajor === requiredMajor && currentMinor < requiredMinor)) {
-                BStackLogger.warn(`Accessibility Automation requires Safari version ${MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari}+ on non-BrowserStack infrastructure.`)
-                return false
+                if (currentMajor < requiredMajor || (currentMajor === requiredMajor && currentMinor < requiredMinor)) {
+                    BStackLogger.warn(`Accessibility Automation requires Safari version ${MIN_BROWSER_VERSIONS_A11Y_NON_BSTACK.safari}+ on non-BrowserStack infrastructure.`)
+                    return false
+                }
             }
         }
-    }
 
-    return true
+        return true
+    } catch (error) {
+        BStackLogger.debug(`Exception in checking capabilities compatibility with Accessibility. Error: ${error}`)
+    }
+    return false
 }
 
 export const shouldScanTestForAccessibility = (suiteTitle: string | undefined, testTitle: string, accessibilityOptions?: { [key: string]: string; }, world?: { [key: string]: unknown; }, isCucumber?: boolean ) => {
