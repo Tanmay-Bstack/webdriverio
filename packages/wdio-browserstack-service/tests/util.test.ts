@@ -1056,7 +1056,7 @@ describe('validateCapsWithA11y', () => {
 
         expect(validateCapsWithA11y(undefined, platformMeta)).toEqual(false)
         expect(logInfoMock.mock.calls[0][0])
-            .toContain('Accessibility Automation supports Chrome 95+, Chrome for Testing 95+, and Safari 16.5+')
+            .toContain('Accessibility Automation supports Chrome 95+, Chrome for Testing 141+, and Safari 16.5+')
     })
 
     it('returns false if browser version is lesser than 95', async () => {
@@ -1120,22 +1120,22 @@ describe('validateCapsWithA11y', () => {
             .toContain('Safari version 16.5 or higher')
     })
 
-    it('returns true for ChromeForTesting 95+', async () => {
+    it('returns true for ChromeForTesting 141+', async () => {
         const platformMeta = {
             'browser_name': 'ChromeForTesting',
-            'browser_version': '120'
+            'browser_version': '141'
         }
         expect(validateCapsWithA11y(undefined, platformMeta)).toEqual(true)
     })
 
-    it('returns false for ChromeForTesting < 95', async () => {
+    it('returns false for ChromeForTesting < 141', async () => {
         const platformMeta = {
             'browser_name': 'ChromeForTesting',
-            'browser_version': '90'
+            'browser_version': '140'
         }
         expect(validateCapsWithA11y(undefined, platformMeta)).toEqual(false)
         expect(logInfoMock.mock.calls[0][0])
-            .toContain('Accessibility Automation requires Chrome for Testing version 95 or higher')
+            .toContain('Accessibility Automation requires Chrome for Testing version 141 or higher')
     })
 })
 
@@ -1159,14 +1159,14 @@ describe('validateCapsWithNonBstackA11y', () => {
             .toContain('Safari version 16.5+')
     })
 
-    it('returns true for ChromeForTesting 100+', async () => {
-        expect(validateCapsWithNonBstackA11y('ChromeForTesting', '120')).toEqual(true)
+    it('returns true for ChromeForTesting 141+', async () => {
+        expect(validateCapsWithNonBstackA11y('ChromeForTesting', '141')).toEqual(true)
     })
 
-    it('returns false for ChromeForTesting < 100', async () => {
-        expect(validateCapsWithNonBstackA11y('ChromeForTesting', '90')).toEqual(false)
+    it('returns false for ChromeForTesting < 141', async () => {
+        expect(validateCapsWithNonBstackA11y('ChromeForTesting', '140')).toEqual(false)
         expect(logInfoMock.mock.calls[0][0])
-            .toContain('Accessibility Automation requires Chrome for Testing version 100+')
+            .toContain('Accessibility Automation requires Chrome for Testing version 141+')
     })
 
     it('returns false if browser is not supported', async () => {
@@ -1176,7 +1176,7 @@ describe('validateCapsWithNonBstackA11y', () => {
 
         expect(validateCapsWithNonBstackA11y(browserName, browserVersion)).toEqual(false)
         expect(logInfoMock.mock.calls[0][0])
-            .toContain('Accessibility Automation on non-BrowserStack infrastructure supports Chrome 100+, Chrome for Testing 100+, and Safari 16.5+')
+            .toContain('Accessibility Automation on non-BrowserStack infrastructure supports Chrome 100+, Chrome for Testing 141+, and Safari 16.5+')
     })
 
     it('returns false if browser version is lesser than 100', async () => {
